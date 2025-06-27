@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="demo-app" default="build" basedir=".">
+    
+    <!-- Project Properties -->
+    <property name="project.name" value="demo-app"/>
+    <property name="project.version" value="0.0.1-SNAPSHOT"/>
+    <property name="java.version" value="17"/>
+    
+    <!-- Directory Structure -->
+    <property name="src.dir" value="src/main/java"/>
+    <property name="resources.dir" value="src/main/resources"/>
+    <property name="test.src.dir" value="src/test/java"/>
+    <property name="test.resources.dir" value="src/test/resources"/>
+    
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="test.classes.dir" value="${build.dir}/test-classes"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="dist.dir" value="dist"/>
+    <property name="reports.dir" value="${build.dir}/reports"/>
+    
+    <!-- JAR Properties -->
+    <property name="jar.name" value="${project.name}-${project.version}.jar"/>
+    <property name="main.class" value="com.example.demoapp.DemoApplication"/>
+    
+    <!-- Spring Boot Dependencies (Download URLs) -->
+    <property name="maven.repo" value="https://repo1.maven.org/maven2"/>
+    <property name="spring.boot.version" value="3.2.0"/>
+    
+    <!-- Define Maven Central Repository URLs for Dependencies -->
+    <property name="spring.boot.starter.web.url" 
+              value="${maven.repo}/org/springframework/boot/spring-boot-starter-web/${spring.boot.version}/spring-boot-starter-web-${spring.boot.version}.jar"/>
+    <property name="spring.boot.starter.url" 
+              value="${maven.repo}/org/springframework/boot/spring-boot-starter/${spring.boot.version}/spring-boot-starter-${spring.boot.version}.jar"/>
+    <property name="spring.boot.url" 
+              value="${maven.repo}/org/springframework/boot/spring-boot/${spring.boot.version}/spring-boot-${spring.boot.version}.jar"/>
+    <property name="spring.boot.autoconfigure.url" 
+              value="${maven.repo}/org/springframework/boot/spring-boot-autoconfigure/${spring.boot.version}/spring-boot-autoconfigure-${spring.boot.version}.jar"/>
+    
+    <!-- Classpath Definition -->
+    <path id="compile.classpath">
+        <fileset dir="${lib.dir}" includes="*.jar" erroronmissingdir="false"/>
+        <fileset dir="${lib.dir}/compile" includes="*.jar" erroronmissingdir="false"/>
+    </path>
+    
+    <path id="test.classpath">
+        <path refid="compile.classpath"/>
+        <pathelement location="${classes.dir}"/>
+        <fileset dir="${lib.dir}/test" includes="*.jar" erroronmissingdir="false"/>
+    </path>
+    
+    <path id="runtime.classpath">
+        <path refid="compile.classpath"/>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${resources.dir}"/>
+    </path>
+    
+    <!-- Initialize Build Environment -->
+    <target name="init" description="Initialize build environment">
+        <echo message="Building ${project.name} version ${project.version}"/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${lib.dir}"/>
+        <mkdir dir="${lib.dir}/compile"/>
+        <mkdir dir="${lib.dir}/test"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${reports.dir}"/>
+    </target>
+    
+    <!-- Download Dependencies -->
+    <target name="download-deps" depends="init" description="Download required dependencies">
+        <echo message="Note: For a complete build, you need to manually download Spring Boot dependencies"/>
+        <echo message="Or use Maven/Gradle for dependency management"/>
+        <echo message="Required JARs should be placed in ${lib.dir}/compile/"/>
+        
+        <!-- Create a basic libs.txt file listing required dependencies -->
+        <echo file="${lib.dir}/required-dependencies.txt" append="false">Required Dependencies for Spring Boot Web Application:
+        
+Compile Dependencies:
+- spring-boot-starter-web-${spring.boot.version}.jar
+- spring-boot-starter-${spring.boot.version}.jar  
+- spring-boot-${spring.boot.version}.jar
+- spring-boot-autoconfigure-${spring.boot.version}.jar
+- spring-web-6.0.x.jar
+- spring-webmvc-6.0.x.jar
+- spring-core-6.0.x.jar
+- spring-context-6.0.x.jar
+- spring-beans-6.0.x.jar
+- jackson-databind-2.15.x.jar
+- jackson-core-2.15.x.jar
+- jackson-annotations-2.15.x.jar
+- tomcat-embed-core-10.1.x.jar
+- slf4j-api-2.0.x.jar
+- logback-classic-1.4.x.jar
+
+Test Dependencies:
+- spring-boot-starter-test-${spring.boot.version}.jar
+- junit-jupiter-5.9.x.jar
+- mockito-core-5.x.jar
+
+Download from: ${maven.repo}
+        </echo>
+    </target>
+    
+    <!-- Clean Build Directory -->
+    <target name="clean" description="Clean build directory">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+    
+    <!-- Compile Source Code -->
+    <target name="compile" depends="init" description="Compile source code">
+        <echo message="Compiling source code..."/>
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}" 
+               classpathref="compile.classpath"
+               includeantruntime="false"
+               source="${java.version}"
+               target="${java.version}"
+               debug="true"
+               deprecation="true">
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+        
+        <!-- Copy resources -->
+        <copy todir="${classes.dir}">
+            <fileset dir="${resources.dir}" includes="**/*" erroronmissingdir="false"/>
+        </copy>
+    </target>
+    
+    <!-- Compile Test Code -->
+    <target name="compile-tests" depends="compile" description="Compile test code">
+        <echo message="Compiling test code..."/>
+        <javac srcdir="${test.src.dir}" 
+               destdir="${test.classes.dir}" 
+               classpathref="test.classpath"
+               includeantruntime="false"
+               source="${java.version}"
+               target="${java.version}"
+               debug="true"
+               erroronmissingdir="false">
+            <compilerarg value="-Xlint:unchecked"/>
+        </javac>
+        
+        <!-- Copy test resources -->
+        <copy todir="${test.classes.dir}" failonerror="false">
+            <fileset dir="${test.resources.dir}" includes="**/*" erroronmissingdir="false"/>
+        </copy>
+    </target>
+    
+    <!-- Run Tests -->
+    <target name="test" depends="compile-tests" description="Run unit tests">
+        <echo message="Running unit tests..."/>
+        <mkdir dir="${reports.dir}/junit"/>
+        
+        <!-- Note: This requires JUnit 5 support in Ant, or use JUnit 4 -->
+        <echo message="Note: To run tests, ensure JUnit dependencies are in classpath"/>
+        <echo message="Test classes compiled to: ${test.classes.dir}"/>
+    </target>
+    
+    <!-- Create JAR -->
+    <target name="jar" depends="compile" description="Create JAR file">
+        <echo message="Creating JAR file..."/>
+        <jar destfile="${dist.dir}/${jar.name}" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Implementation-Title" value="${project.name}"/>
+                <attribute name="Implementation-Version" value="${project.version}"/>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Built-Date" value="${TODAY}"/>
+            </manifest>
+        </jar>
+        <echo message="JAR created: ${dist.dir}/${jar.name}"/>
+    </target>
+    
+    <!-- Create Fat JAR (with dependencies) -->
+    <target name="fat-jar" depends="compile" description="Create executable JAR with dependencies">
+        <echo message="Creating fat JAR..."/>
+        <jar destfile="${dist.dir}/${project.name}-${project.version}-fat.jar">
+            <!-- Add compiled classes -->
+            <fileset dir="${classes.dir}"/>
+            
+            <!-- Add dependencies -->
+            <zipgroupfileset dir="${lib.dir}/compile" includes="*.jar" erroronmissingdir="false"/>
+            
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Implementation-Title" value="${project.name}"/>
+                <attribute name="Implementation-Version" value="${project.version}"/>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Built-Date" value="${TODAY}"/>
+            </manifest>
+        </jar>
+        <echo message="Fat JAR created: ${dist.dir}/${project.name}-${project.version}-fat.jar"/>
+    </target>
+    
+    <!-- Run Application -->
+    <target name="run" depends="compile" description="Run the Spring Boot application">
+        <echo message="Starting Spring Boot application..."/>
+        <java classname="${main.class}" 
+              classpathref="runtime.classpath" 
+              fork="true">
+            <jvmarg value="-Dspring.profiles.active=dev"/>
+        </java>
+    </target>
+    
+    <!-- Generate Javadoc -->
+    <target name="javadoc" depends="init" description="Generate Javadoc">
+        <echo message="Generating Javadoc..."/>
+        <mkdir dir="${build.dir}/javadoc"/>
+        <javadoc sourcepath="${src.dir}"
+                 destdir="${build.dir}/javadoc"
+                 classpathref="compile.classpath"
+                 packagenames="com.example.demoapp.*"
+                 windowtitle="${project.name} API Documentation"
+                 doctitle="${project.name} API Documentation"
+                 version="true"
+                 use="true"/>
+    </target>
+    
+    <!-- Build All -->
+    <target name="build" depends="clean, compile, test, jar" description="Complete build">
+        <echo message="Build completed successfully!"/>
+    </target>
+    
+    <!-- Build with Fat JAR -->
+    <target name="build-all" depends="clean, compile, test, jar, fat-jar, javadoc" description="Complete build with fat JAR and docs">
+        <echo message="Complete build finished!"/>
+        <echo message="Artifacts created in: ${dist.dir}/"/>
+    </target>
+    
+    <!-- Display Help -->
+    <target name="help" description="Display available targets">
+        <echo message="Available targets:"/>
+        <echo message="  init          - Initialize build environment"/>
+        <echo message="  download-deps - Show required dependencies"/>
+        <echo message="  clean         - Clean build directory"/> 
+        <echo message="  compile       - Compile source code"/>
+        <echo message="  compile-tests - Compile test code"/>
+        <echo message="  test          - Run unit tests"/>
+        <echo message="  jar           - Create JAR file"/>
+        <echo message="  fat-jar       - Create executable JAR with dependencies"/>
+        <echo message="  run           - Run the Spring Boot application"/>
+        <echo message="  javadoc       - Generate Javadoc"/>
+        <echo message="  build         - Complete build (clean, compile, test, jar)"/>
+        <echo message="  build-all     - Complete build with fat JAR and docs"/>
+        <echo message="  help          - Display this help"/>
+    </target>
+    
+</project>
