@@ -7,7 +7,7 @@
     <property name="java.version" value="17"/>
     
     <!-- Directory Structure -->
-    <property name="src.dir" value="src/main/java"/>
+    <property name="src.dir" value="src"/>
     <property name="resources.dir" value="src/main/resources"/>
     <property name="test.src.dir" value="src/test/java"/>
     <property name="test.resources.dir" value="src/test/resources"/>
